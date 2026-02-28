@@ -39,6 +39,34 @@ app.post('/sort-string', (req, res) => {
   }
 });
 
+app.post('/validate', (req, res) => {
+  try {
+    const { email, url } = req.body;
+    
+    if (!email || !url) {
+      return res.status(400).json({ 
+        error: 'Both email and URL fields are required in request body'
+      });
+    }
+
+    const supabaseUrl = `https://yhxzjyykdsfkdrmdxgho.supabase.co/functions/v1/application-task?url=${encodeURIComponent(url)}&email=${encodeURIComponent(email)}`;
+    
+    fetch(supabaseUrl)
+      .then(response => response.json())
+      .then(data => {
+        res.json(data);
+      })
+      .catch(error => {
+        console.error('Error calling Supabase function:', error);
+        res.status(500).json({ error: 'Failed to validate with external service' });
+      });
+    
+  } catch (error) {
+    console.error('Error in validate:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 app.use(express.static('public'));
 

@@ -238,7 +238,7 @@
             resultsDiv.innerHTML = '';
 
             try {
-                const webhookResponse = await fetch(`${API_BASE}/sort-string`, {
+                const webhookResponse = await fetch(`${API_BASE}/webhook`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -252,7 +252,7 @@
                 let validationSuccess = false;
                 
                 try {
-                    const validationResponse = await fetch('/application-task', {
+                    const validationResponse = await fetch('/validate', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
