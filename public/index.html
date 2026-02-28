@@ -190,38 +190,32 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>API Validation Tester</h1>
-            <p>Test email and URL validation with our API</p>
+            <h1>API Endpoint Tester</h1>
+            <p>Test API endpoint with the validation service</p>
         </div>
 
         <form id="validationForm">
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" placeholder="Enter an email address" required>
+                <input type="email" id="email" name="email" placeholder="Enter your email address" required>
             </div>
 
             <div class="form-group">
-                <label for="url">URL</label>
-                <input type="url" id="url" name="url" placeholder="Enter a URL (https://example.com)" required>
+                <label for="url">Your API URL</label>
+                <input type="url" id="url" name="url" placeholder="Enter your API endpoint URL" required>
             </div>
 
             <button type="submit" class="submit-btn" id="submitBtn">
-                Validate Input
+                Test API Endpoint
             </button>
         </form>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>Validating...</p>
+            <p>Testing API endpoints...</p>
         </div>
 
         <div id="results"></div>
-
-        <div class="api-info">
-            <strong>API Endpoint:</strong> <span id="apiEndpoint">Loading...</span><br>
-            <strong>Method:</strong> GET<br>
-            <strong>Parameters:</strong> url, email (as query parameters)
-        </div>
     </div>
 
     <script>
@@ -229,14 +223,13 @@
         const resultsDiv = document.getElementById('results');
         const loadingDiv = document.getElementById('loading');
         const submitBtn = document.getElementById('submitBtn');
-        const apiEndpointSpan = document.getElementById('apiEndpoint');
 
         const API_BASE = window.location.origin;
-        apiEndpointSpan.textContent = `${API_BASE}/application-task`;
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const testString = 'example';
             const email = document.getElementById('email').value;
             const url = document.getElementById('url').value;
 
@@ -245,14 +238,31 @@
             resultsDiv.innerHTML = '';
 
             try {
-                const queryParams = new URLSearchParams({ email, url });
-                const response = await fetch(`${API_BASE}/application-task?${queryParams}`, {
-                    method: 'GET'
+                const webhookResponse = await fetch(`${API_BASE}/webhook`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ data: testString })
                 });
 
-                const data = await response.json();
+                const webhookData = await webhookResponse.json();
                 
-                displayResults(data, response.ok);
+                const validationUrl = `https://yhxzjyykdsfkdrmdxgho.supabase.co/functions/v1/application-task?url=${encodeURIComponent(url)}&email=${encodeURIComponent(email)}`;
+                
+                let validationData = null;
+                let validationSuccess = false;
+                
+                try {
+                    const validationResponse = await fetch(validationUrl);
+                    validationData = await validationResponse.json();
+                    validationSuccess = validationResponse.ok;
+                } catch (validationError) {
+                    validationData = { error: `Failed to test validation endpoint: ${validationError.message}` };
+                }
+                
+                displayResults(testString, webhookData, webhookResponse.ok, validationData, validationSuccess, url, email);
+                
             } catch (error) {
                 displayError('Failed to connect to API: ' + error.message);
             } finally {
@@ -261,34 +271,62 @@
             }
         });
 
-        function displayResults(data, success) {
-            let html = `<div class="results ${success ? '' : 'error'}">`;
+        function displayResults(inputString, webhookData, webhookSuccess, validationData, validationSuccess, url, email) {
+            let html = `<div class="results">`;
+
+            html += `<h3 style="margin-bottom: 1rem; color: #4a5568;">Local API Test</h3>`;
             
-            if (success && data.message) {
+            if (webhookSuccess && webhookData.word) {
                 html += `
-                    <h3 style="margin-bottom: 1rem; color: #4a5568;">✅ Success!</h3>
-                    
                     <div class="result-item valid">
-                        <div class="result-label">Response Message</div>
+                        <div class="result-label">Input String</div>
+                        <div class="result-value">"${inputString}"</div>
+                    </div>
+
+                    <div class="result-item valid">
+                        <div class="result-label">Sorted Characters</div>
+                        <div class="result-value">${JSON.stringify(webhookData.word)}</div>
                         <div class="result-message valid">
-                            ${data.message}
+                            String converted to array and sorted alphabetically
                         </div>
-                    </div>
-
-                    <div class="result-item valid">
-                        <div class="result-label">Email Submitted</div>
-                        <div class="result-value">${data.email}</div>
-                    </div>
-
-                    <div class="result-item valid">
-                        <div class="result-label">URL Submitted</div>
-                        <div class="result-value">${data.url}</div>
                     </div>
                 `;
             } else {
                 html += `
-                    <h3 style="margin-bottom: 1rem; color: #e53e3e;">❌ Error</h3>
-                    <p style="color: #e53e3e;">${data.error || 'Unknown error occurred'}</p>
+                    <div class="result-item invalid">
+                        <div class="result-label">Local API Error</div>
+                        <div class="result-message invalid">${webhookData.error || 'Unknown error'}</div>
+                    </div>
+                `;
+            }
+    
+            html += `<h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #4a5568;">Validation Endpoint Test</h3>`;
+            
+            if (validationSuccess && validationData.message) {
+                html += `
+                    <div class="result-item valid">
+                        <div class="result-label">Validation Response</div>
+                        <div class="result-message valid">
+                            ${validationData.message}
+                        </div>
+                    </div>
+
+                    <div class="result-item valid">
+                        <div class="result-label">Tested Email</div>
+                        <div class="result-value">${email}</div>
+                    </div>
+
+                    <div class="result-item valid">
+                        <div class="result-label">Tested URL</div>
+                        <div class="result-value">${url}</div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="result-item invalid">
+                        <div class="result-label">Validation Error</div>
+                        <div class="result-message invalid">${validationData.error || 'Unknown error occurred'}</div>
+                    </div>
                 `;
             }
             
@@ -304,6 +342,8 @@
                 </div>
             `;
         }
+
+        document.getElementById('url').value = window.location.origin + '/webhook';
     </script>
 </body>
 </html>

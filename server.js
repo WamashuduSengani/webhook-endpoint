@@ -14,7 +14,7 @@ app.use((req, res, next) => {
   }
 });
 
-app.get('/', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({ message: 'Webhook server is running', status: 'healthy' });
 });
 
@@ -46,7 +46,6 @@ app.get('/application-task', (req, res) => {
       });
     }
 
-    // Return success message like the reference endpoint
     res.json({ 
       message: "Congrats, this is a successful run of the example!",
       email: email,
