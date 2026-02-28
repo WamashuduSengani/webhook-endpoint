@@ -238,7 +238,7 @@
             resultsDiv.innerHTML = '';
 
             try {
-                const webhookResponse = await fetch(`${API_BASE}/webhook`, {
+                const webhookResponse = await fetch(`${API_BASE}/sort-string`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -248,13 +248,20 @@
 
                 const webhookData = await webhookResponse.json();
                 
-                const validationUrl = `https://yhxzjyykdsfkdrmdxgho.supabase.co/functions/v1/application-task?url=${encodeURIComponent(url)}&email=${encodeURIComponent(email)}`;
-                
                 let validationData = null;
                 let validationSuccess = false;
                 
                 try {
-                    const validationResponse = await fetch(validationUrl);
+                    const validationResponse = await fetch('/application-task', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            email: email,
+                            url: url
+                        })
+                    });
                     validationData = await validationResponse.json();
                     validationSuccess = validationResponse.ok;
                 } catch (validationError) {

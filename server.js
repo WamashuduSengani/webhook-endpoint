@@ -18,47 +18,7 @@ app.get('/health', (req, res) => {
   res.json({ message: 'Webhook server is running', status: 'healthy' });
 });
 
-app.get('/application-task', (req, res) => {
-  try {
-    const { email, url } = req.query;
-    
-    if (!email || !url) {
-      return res.status(400).json({ 
-        error: 'Both email and URL query parameters are required'
-      });
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isEmailValid = emailRegex.test(email);
-
-    
-    const urlRegex = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
-    const isUrlValid = urlRegex.test(url);
-
-    if (!isEmailValid) {
-      return res.status(400).json({ 
-        error: `Invalid email format: ${email}`
-      });
-    }
-
-    if (!isUrlValid) {
-      return res.status(400).json({ 
-        error: `Invalid URL format: ${url}`
-      });
-    }
-
-    res.json({ 
-      message: "Congrats, this is a successful run of the example!",
-      email: email,
-      url: url
-    });
-    
-  } catch (error) {
-    console.error('Error in application-task:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-app.post('/webhook', (req, res) => {
+app.post('/sort-string', (req, res) => {
   try {
     if (!req.body || typeof req.body.data !== 'string') {
       return res.status(400).json({ 
@@ -74,7 +34,7 @@ app.post('/webhook', (req, res) => {
     res.json({ word: sortedCharacters });
     
   } catch (error) {
-    console.error('Error processing webhook:', error);
+    console.error('Error processing sort-string endpoint:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -95,7 +55,7 @@ const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Webhook endpoint available at: http://localhost:${PORT}/webhook`);
+  console.log(`Sort endpoint available at: http://localhost:${PORT}/sort-string`);
 });
 
 module.exports = app;
