@@ -273,34 +273,8 @@
 
         function displayResults(inputString, webhookData, webhookSuccess, validationData, validationSuccess, url, email) {
             let html = `<div class="results">`;
-
-            html += `<h3 style="margin-bottom: 1rem; color: #4a5568;">Local API Test</h3>`;
-            
-            if (webhookSuccess && webhookData.word) {
-                html += `
-                    <div class="result-item valid">
-                        <div class="result-label">Input String</div>
-                        <div class="result-value">"${inputString}"</div>
-                    </div>
-
-                    <div class="result-item valid">
-                        <div class="result-label">Sorted Characters</div>
-                        <div class="result-value">${JSON.stringify(webhookData.word)}</div>
-                        <div class="result-message valid">
-                            String converted to array and sorted alphabetically
-                        </div>
-                    </div>
-                `;
-            } else {
-                html += `
-                    <div class="result-item invalid">
-                        <div class="result-label">Local API Error</div>
-                        <div class="result-message invalid">${webhookData.error || 'Unknown error'}</div>
-                    </div>
-                `;
-            }
     
-            html += `<h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #4a5568;">Validation Endpoint Test</h3>`;
+            html += `<h3 style="margin-bottom: 1rem; color: #4a5568;">Validation Endpoint Test</h3>`;
             
             if (validationSuccess && validationData.message) {
                 html += `
@@ -309,16 +283,6 @@
                         <div class="result-message valid">
                             ${validationData.message}
                         </div>
-                    </div>
-
-                    <div class="result-item valid">
-                        <div class="result-label">Tested Email</div>
-                        <div class="result-value">${email}</div>
-                    </div>
-
-                    <div class="result-item valid">
-                        <div class="result-label">Tested URL</div>
-                        <div class="result-value">${url}</div>
                     </div>
                 `;
             } else {
@@ -342,8 +306,6 @@
                 </div>
             `;
         }
-
-        document.getElementById('url').value = window.location.origin + '/webhook';
     </script>
 </body>
 </html>
