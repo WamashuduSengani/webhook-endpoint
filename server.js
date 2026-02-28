@@ -2,11 +2,6 @@ const express = require('express');
 const app = express();
 
 app.use(express.json());
-app.use(express.static('public')); 
-
-app.use(express.json());
-app.use(express.static('public')); 
-
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -23,45 +18,44 @@ app.get('/', (req, res) => {
   res.json({ message: 'Webhook server is running', status: 'healthy' });
 });
 
-app.post('/validate', (req, res) => {
+app.get('/application-task', (req, res) => {
   try {
-    const { email, url } = req.body;
+    const { email, url } = req.query;
     
     if (!email || !url) {
       return res.status(400).json({ 
-        error: 'Both email and URL are required',
-        valid: false
+        error: 'Both email and URL query parameters are required'
       });
     }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const isEmailValid = emailRegex.test(email);
 
+    
     const urlRegex = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
     const isUrlValid = urlRegex.test(url);
 
-    const result = {
-      email: {
-        value: email,
-        valid: isEmailValid,
-        message: isEmailValid ? 'Valid email address' : 'Invalid email format'
-      },
-      url: {
-        value: url,
-        valid: isUrlValid,
-        message: isUrlValid ? 'Valid URL format' : 'Invalid URL format'
-      },
-      overall: {
-        valid: isEmailValid && isUrlValid,
-        message: isEmailValid && isUrlValid ? 'Both email and URL are valid' : 'Validation failed'
-      }
-    };
+    if (!isEmailValid) {
+      return res.status(400).json({ 
+        error: `Invalid email format: ${email}`
+      });
+    }
 
-    res.json(result);
+    if (!isUrlValid) {
+      return res.status(400).json({ 
+        error: `Invalid URL format: ${url}`
+      });
+    }
+
+    // Return success message like the reference endpoint
+    res.json({ 
+      message: "Congrats, this is a successful run of the example!",
+      email: email,
+      url: url
+    });
     
   } catch (error) {
-    console.error('Error in validation:', error);
-    res.status(500).json({ error: 'Internal server error', valid: false });
+    console.error('Error in application-task:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -85,6 +79,9 @@ app.post('/webhook', (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+app.use(express.static('public'));
 
 app.use((error, req, res, next) => {
   console.error('Unexpected error:', error);

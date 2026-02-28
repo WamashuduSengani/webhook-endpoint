@@ -219,8 +219,8 @@
 
         <div class="api-info">
             <strong>API Endpoint:</strong> <span id="apiEndpoint">Loading...</span><br>
-            <strong>Method:</strong> POST<br>
-            <strong>Content-Type:</strong> application/json
+            <strong>Method:</strong> GET<br>
+            <strong>Parameters:</strong> url, email (as query parameters)
         </div>
     </div>
 
@@ -232,7 +232,7 @@
         const apiEndpointSpan = document.getElementById('apiEndpoint');
 
         const API_BASE = window.location.origin;
-        apiEndpointSpan.textContent = `${API_BASE}/validate`;
+        apiEndpointSpan.textContent = `${API_BASE}/application-task`;
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -245,12 +245,9 @@
             resultsDiv.innerHTML = '';
 
             try {
-                const response = await fetch(`${API_BASE}/validate`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email, url })
+                const queryParams = new URLSearchParams({ email, url });
+                const response = await fetch(`${API_BASE}/application-task?${queryParams}`, {
+                    method: 'GET'
                 });
 
                 const data = await response.json();
@@ -267,36 +264,30 @@
         function displayResults(data, success) {
             let html = `<div class="results ${success ? '' : 'error'}">`;
             
-            if (success && data.email && data.url) {
+            if (success && data.message) {
                 html += `
-                    <h3 style="margin-bottom: 1rem; color: #4a5568;">Validation Results</h3>
+                    <h3 style="margin-bottom: 1rem; color: #4a5568;">✅ Success!</h3>
                     
-                    <div class="result-item ${data.email.valid ? 'valid' : 'invalid'}">
-                        <div class="result-label">Email Validation</div>
-                        <div class="result-value">${data.email.value}</div>
-                        <div class="result-message ${data.email.valid ? 'valid' : 'invalid'}">
-                            ${data.email.message}
+                    <div class="result-item valid">
+                        <div class="result-label">Response Message</div>
+                        <div class="result-message valid">
+                            ${data.message}
                         </div>
                     </div>
 
-                    <div class="result-item ${data.url.valid ? 'valid' : 'invalid'}">
-                        <div class="result-label">URL Validation</div>
-                        <div class="result-value">${data.url.value}</div>
-                        <div class="result-message ${data.url.valid ? 'valid' : 'invalid'}">
-                            ${data.url.message}
-                        </div>
+                    <div class="result-item valid">
+                        <div class="result-label">Email Submitted</div>
+                        <div class="result-value">${data.email}</div>
                     </div>
 
-                    <div class="result-item ${data.overall.valid ? 'valid' : 'invalid'}">
-                        <div class="result-label">Overall Result</div>
-                        <div class="result-message ${data.overall.valid ? 'valid' : 'invalid'}">
-                            ${data.overall.message}
-                        </div>
+                    <div class="result-item valid">
+                        <div class="result-label">URL Submitted</div>
+                        <div class="result-value">${data.url}</div>
                     </div>
                 `;
             } else {
                 html += `
-                    <h3 style="margin-bottom: 1rem; color: #e53e3e;">Error</h3>
+                    <h3 style="margin-bottom: 1rem; color: #e53e3e;">❌ Error</h3>
                     <p style="color: #e53e3e;">${data.error || 'Unknown error occurred'}</p>
                 `;
             }
