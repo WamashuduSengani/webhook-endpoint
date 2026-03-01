@@ -24,10 +24,9 @@ app.post('/webhook', (req, res) => {
 
     const inputString = req.body.data;
     const charactersArray = inputString.split('');
-    const sortedCharacters = charactersArray.sort();
-    
 
-    res.json({ word: sortedCharacters });
+
+    res.json({ word: charactersArray });
     
   } catch (error) {
     console.error('Error processing webhook endpoint:', error);
