@@ -229,7 +229,6 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const testString = 'example';
             const email = document.getElementById('email').value;
             const url = document.getElementById('url').value;
 
@@ -238,16 +237,6 @@
             resultsDiv.innerHTML = '';
 
             try {
-                const webhookResponse = await fetch(`${API_BASE}/sort-string`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ data: testString })
-                });
-
-                const webhookData = await webhookResponse.json();
-                
                 let validationData = null;
                 let validationSuccess = false;
                 
@@ -268,7 +257,7 @@
                     validationData = { error: `Failed to test validation endpoint: ${validationError.message}` };
                 }
                 
-                displayResults(testString, webhookData, webhookResponse.ok, validationData, validationSuccess, url, email);
+                displayResults(validationData, validationSuccess, url, email);
                 
             } catch (error) {
                 displayError('Failed to connect to API: ' + error.message);
@@ -278,7 +267,7 @@
             }
         });
 
-        function displayResults(inputString, webhookData, webhookSuccess, validationData, validationSuccess, url, email) {
+        function displayResults(validationData, validationSuccess, url, email) {
             let html = `<div class="results">`;
     
             html += `<h3 style="margin-bottom: 1rem; color: #4a5568;">Validation Endpoint Test</h3>`;

@@ -18,7 +18,7 @@ app.get('/health', (req, res) => {
   res.json({ message: 'Webhook server is running', status: 'healthy' });
 });
 
-app.post('/sort-string', (req, res) => {
+app.post('/webhook', (req, res) => {
   try {
     if (!req.body || typeof req.body.data !== 'string') {
       return res.status(400).json({ 
@@ -34,7 +34,7 @@ app.post('/sort-string', (req, res) => {
     res.json({ word: sortedCharacters });
     
   } catch (error) {
-    console.error('Error processing sort-string endpoint:', error);
+    console.error('Error processing webhook endpoint:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -83,7 +83,7 @@ const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`Sort endpoint available at: http://localhost:${PORT}/sort-string`);
+  console.log(`Webhook endpoint available at: http://localhost:${PORT}/webhook`);
 });
 
 module.exports = app;

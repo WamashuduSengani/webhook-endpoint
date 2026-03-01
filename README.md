@@ -62,7 +62,7 @@ The server will start on port 3000 by default (or the port specified in the PORT
 ## Example Usage
 
 ```bash
-curl -X POST http://localhost:3000/webhook \
+curl -X POST http://localhost:3000/sort-string \
   -H "Content-Type: application/json" \
   -d '{"data": "example"}'
 ```
