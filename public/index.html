@@ -190,8 +190,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>API Endpoint Tester</h1>
-            <p>Test API endpoint with the validation service</p>
+            <h1>Webhook Validator</h1>
+            <p>Validate your webhook endpoint with the testing service</p>
         </div>
 
         <form id="validationForm">
@@ -201,18 +201,18 @@
             </div>
 
             <div class="form-group">
-                <label for="url">Your API URL</label>
-                <input type="url" id="url" name="url" placeholder="Enter your API endpoint URL" required>
+                <label for="url">Webhook Endpoint URL</label>
+                <input type="url" id="url" name="url" placeholder="Enter your webhook endpoint URL" required>
             </div>
 
             <button type="submit" class="submit-btn" id="submitBtn">
-                Test API Endpoint
+                Validate Webhook
             </button>
         </form>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>Testing API endpoints...</p>
+            <p>Validating webhook endpoint...</p>
         </div>
 
         <div id="results"></div>
@@ -223,8 +223,6 @@
         const resultsDiv = document.getElementById('results');
         const loadingDiv = document.getElementById('loading');
         const submitBtn = document.getElementById('submitBtn');
-
-        const API_BASE = window.location.origin;
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -237,57 +235,71 @@
             resultsDiv.innerHTML = '';
 
             try {
-                let validationData = null;
-                let validationSuccess = false;
+                const supabaseUrl = `https://yhxzjyykdsfkdrmdxgho.supabase.co/functions/v1/application-task?url=${encodeURIComponent(url)}&email=${encodeURIComponent(email)}`;
                 
-                try {
-                    const validationResponse = await fetch('/validate', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ 
-                            email: email,
-                            url: url
-                        })
-                    });
-                    validationData = await validationResponse.json();
-                    validationSuccess = validationResponse.ok;
-                } catch (validationError) {
-                    validationData = { error: `Failed to test validation endpoint: ${validationError.message}` };
-                }
+                const response = await fetch(supabaseUrl);
+                const data = await response.json();
                 
-                displayResults(validationData, validationSuccess, url, email);
+                displayResults(data, response.ok);
                 
             } catch (error) {
-                displayError('Failed to connect to API: ' + error.message);
+                displayError('Failed to connect to validation service: ' + error.message);
             } finally {
                 loadingDiv.style.display = 'none';
                 submitBtn.disabled = false;
             }
         });
 
-        function displayResults(validationData, validationSuccess, url, email) {
+        function displayResults(responseData, success) {
             let html = `<div class="results">`;
     
-            html += `<h3 style="margin-bottom: 1rem; color: #4a5568;">Validation Endpoint Test</h3>`;
+            html += `<h3 style="margin-bottom: 1rem; color: #4a5568;">Validation Results</h3>`;
             
-            if (validationSuccess && validationData.message) {
+            if (success && responseData.message && !responseData.message.includes('did not behave as expected')) {
                 html += `
                     <div class="result-item valid">
-                        <div class="result-label">Validation Response</div>
+                        <div class="result-label">Validation Status</div>
                         <div class="result-message valid">
-                            ${validationData.message}
+                            ${responseData.message || 'Webhook validation successful!'}
                         </div>
                     </div>
                 `;
             } else {
                 html += `
                     <div class="result-item invalid">
-                        <div class="result-label">Validation Error</div>
-                        <div class="result-message invalid">${validationData.error || 'Unknown error occurred'}</div>
+                        <div class="result-label">Validation Failed</div>
+                        <div class="result-message invalid">
+                            ${responseData.Message || responseData.message || 'Webhook validation failed'}
+                        </div>
                     </div>
                 `;
+                
+                if (responseData.dataprovided) {
+                    html += `
+                        <div class="result-item">
+                            <div class="result-label">Test Data Sent</div>
+                            <div class="result-value">${JSON.stringify(responseData.dataprovided)}</div>
+                        </div>
+                    `;
+                }
+                
+                if (responseData.yourResponse) {
+                    html += `
+                        <div class="result-item">
+                            <div class="result-label">Your Response</div>
+                            <div class="result-value">${JSON.stringify(responseData.yourResponse)}</div>
+                        </div>
+                    `;
+                }
+                
+                if (responseData.expectedResponse) {
+                    html += `
+                        <div class="result-item">
+                            <div class="result-label">Expected Response</div>
+                            <div class="result-value">${JSON.stringify(responseData.expectedResponse)}</div>
+                        </div>
+                    `;
+                }
             }
             
             html += '</div>';
